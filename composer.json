@@ -16,5 +16,8 @@
             "name": "reesmcivor",
             "email": "reesmcivor@hotmail.com"
         }
-    ]
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^8"
+    }
 }

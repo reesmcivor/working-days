@@ -2,53 +2,89 @@
 
 namespace ReesMcIvor\WorkingDays;
 
-use Carbon\CarbonPeriod;
+class WorkingDaysService
+{
 
-class WorkingDaysService {
+    public array $workingDays = [];
+    public string $country = 'england-and-wales';
 
-    public $countries = [];
-    public $startTime = 0;
-    public $finishTime = 0;
+    public int $startDateTimestamp = 0;
+    public int $endDateTimestamp = 0;
 
-    public function setStartTime( $startTime ) : self
+    public bool $includeWeekends = false;
+
+    public function setStartTimestamp($startDateTimestamp): self
     {
-        $this->startTime = $startTime;
+        $this->startDateTimestamp = $startDateTimestamp;
         return $this;
     }
 
-    public function setFinishTime( $finishTime ) : self
+    public function setEndTimestamp($endDateTimestamp): self
     {
-        $this->finishTime = $finishTime;
+        $this->endDateTimestamp = $endDateTimestamp;
         return $this;
     }
 
-    public function setCountries( $countries = [] ) : self
+    public function setCountry($country): self
     {
-        $this->countries = $countries;
+        $this->country = $country;
         return $this;
     }
 
-    public function getWorkingDays()
+    public function isWorkingDay(\Carbon\Carbon $date)
     {
-        if(!$this->startTime) throw new \Exception('Start time not set');
-        if(!$this->finishTime) throw new \Exception('Finish time not set');
-        if(!$this->countries) throw new \Exception('Countries not set');
+        if(!$this->includeWeekends && $date->isWeekend())
+            return false;
 
-        foreach($this->getDatePeriod($this->startTime, $this->finishTime) as $date) {
-            $this->workingDays[] = $date;
+        if(UkBankHolidayFactory::getByDate($date->year, $date->month, $date->day))
+            return false;
+
+        return true;
+    }
+
+    public function getNextWorkingDay( $nowAsTimestamp = null )
+    {
+        $now = \Carbon\Carbon::createFromTimestamp($nowAsTimestamp ?? time() );
+        $nextWorkingDay = $now->copy()->addDay();
+        do {
+            if($this->isWorkingDay($nextWorkingDay)) {
+                return $nextWorkingDay;
+            }
+            $nextWorkingDay->addDay();
+        } while(true);
+    }
+
+    public function setWorkingDays() : void
+    {
+        if (!$this->startDateTimestamp)
+            throw new \Exception('Start time not set');
+
+        if (!$this->endDateTimestamp)
+            throw new \Exception('Finish time not set');
+
+        if (!$this->country)
+            throw new \Exception('Country not set');
+
+        $carbonDateRange = $this->getDatePeriod(
+            \Carbon\Carbon::createFromTimestamp($this->startDateTimestamp),
+            \Carbon\Carbon::createFromTimestamp($this->endDateTimestamp)
+        );
+
+        foreach ($carbonDateRange as $date) {
+            if($this->isWorkingDay($date)) {
+                $this->workingDays[] = $date;
+            }
         }
-        return collect($this->workingDays);
-        
     }
 
-    private function getDatePeriod( $startTime, $finishTime ) : CarbonPeriod
+    public function getWorkingDays() : array
     {
-        return CarbonPeriod::create($this->startDate, $this->endDate);
+        return $this->workingDays;
     }
 
-    public function getUkHolidays()
+    private function getDatePeriod($startTime, $finishTime): \Carbon\CarbonPeriod
     {
-
+        return \Carbon\CarbonPeriod::create($startTime, $finishTime);
     }
 
 }
