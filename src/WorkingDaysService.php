@@ -4,9 +4,11 @@ namespace ReesMcIvor\WorkingDays;
 
 class WorkingDaysService {
 
-    public function __construct()
-    {
+    public $startTime = 0;
 
+    public function setStartDate( $startTime )
+    {
+        $this->startTime = $startTime;
     }
 
 }
