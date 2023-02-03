@@ -3,7 +3,8 @@
     "description": "Get working days UK",
     "require": {
         "rapidwebltd/php-uk-bank-holidays": "^5.0", 
-        "nesbot/carbon": "^2.0"
+        "nesbot/carbon": "^2.0",
+        "ramsey/collection": "^1.2"
     },
     "autoload": {
         "psr-4": {
