@@ -2,6 +2,9 @@
 
 namespace ReesMcIvor\WorkingDays;
 
+use Carbon\Carbon;
+use RapidWeb\UkBankHolidays\Factories\UkBankHolidayFactory;
+
 class WorkingDaysService
 {
 
@@ -31,7 +34,7 @@ class WorkingDaysService
         return $this;
     }
 
-    public function isWorkingDay(\Carbon\Carbon $date)
+    public function isWorkingDay(Carbon $date)
     {
         if(!$this->includeWeekends && $date->isWeekend())
             return false;
@@ -44,7 +47,7 @@ class WorkingDaysService
 
     public function getNextWorkingDay( $nowAsTimestamp = null )
     {
-        $now = \Carbon\Carbon::createFromTimestamp($nowAsTimestamp ?? time() );
+        $now = Carbon::createFromTimestamp($nowAsTimestamp ?? time() );
         $nextWorkingDay = $now->copy()->addDay();
         do {
             if($this->isWorkingDay($nextWorkingDay)) {
@@ -66,8 +69,8 @@ class WorkingDaysService
             throw new \Exception('Country not set');
 
         $carbonDateRange = $this->getDatePeriod(
-            \Carbon\Carbon::createFromTimestamp($this->startDateTimestamp),
-            \Carbon\Carbon::createFromTimestamp($this->endDateTimestamp)
+            Carbon::createFromTimestamp($this->startDateTimestamp),
+            Carbon::createFromTimestamp($this->endDateTimestamp)
         );
 
         foreach ($carbonDateRange as $date) {
