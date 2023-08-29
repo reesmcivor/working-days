@@ -90,4 +90,30 @@ class WorkingDaysService
         return \Carbon\CarbonPeriod::create($startTime, $finishTime);
     }
 
+    function calculateAgeInHours( Carbon $inquiryDate, array $workingDays, $startWorkHour = 9, $endWorkHour = 17, $now = null) {
+
+        if(!$now) {
+            $now = now();
+        }
+
+        $hours = 0;
+        $currentDate = clone $inquiryDate;
+
+        while ($currentDate->lessThan($now)) {
+            $formattedCurrentDate = $currentDate->format('Y-m-d');
+            if (!$this->includeWeekends && $currentDate->isWeekend()) {
+                $currentDate->addHour();
+                continue;
+            }
+            if (in_array($formattedCurrentDate, $workingDays)) {
+                if ($currentDate->hour >= $startWorkHour && $currentDate->hour < $endWorkHour) {
+                    $hours++;
+                }
+            }
+            $currentDate->addHour();
+        }
+
+        return $hours;
+    }
+
 }
